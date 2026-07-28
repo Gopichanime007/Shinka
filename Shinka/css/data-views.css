@@ -1,0 +1,59 @@
+.toolbar {
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+  margin-bottom: var(--sp-5);
+}
+.toolbar .toolbar-search {
+  flex: 1; min-width: 200px; display: flex; align-items: center; gap: var(--sp-2);
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 0 var(--sp-3); height: 40px;
+}
+.toolbar .toolbar-search:focus-within { border-color: var(--color-blue); box-shadow: var(--shadow-focus); }
+.toolbar .toolbar-search input { background: none; border: none; flex: 1; height: 100%; font-size: var(--fs-sm); color: var(--color-text-primary); }
+.toolbar .toolbar-search i { color: var(--color-text-secondary); font-size: 13px; }
+.toolbar .select { width: auto; min-width: 130px; height: 40px; }
+.toolbar-spacer { flex: 1; }
+.toolbar-count { font-size: var(--fs-xs); color: var(--color-text-secondary); white-space: nowrap; }
+
+.view-toggle { display: flex; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+.view-toggle button { padding: 6px 12px; border-radius: var(--radius-sm); font-size: var(--fs-xs); font-weight: 600; color: var(--color-text-secondary); }
+.view-toggle button.active { background: var(--color-blue-soft); color: var(--color-blue); }
+
+/* ---- Data table ---- */
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 780px; }
+.data-table th {
+  text-align: left; font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--color-text-secondary); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--color-border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+.data-table th:hover { color: var(--color-text-primary); }
+.data-table th i { margin-left: 5px; font-size: 10px; opacity: 0.5; }
+.data-table td { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--color-border); font-size: var(--fs-sm); vertical-align: middle; }
+.data-table tbody tr { transition: background var(--dur-fast) var(--ease); }
+.data-table tbody tr:hover { background: var(--color-surface-hover); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.cell-title { font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell-sub { font-size: var(--fs-xs); color: var(--color-text-secondary); margin-top: 2px; }
+.cell-actions { display: flex; gap: var(--sp-1); justify-content: flex-end; opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
+.data-table tbody tr:hover .cell-actions { opacity: 1; }
+.row-check { width: 16px; height: 16px; accent-color: var(--color-blue); }
+.hours-cell { font-family: var(--font-mono); font-size: var(--fs-xs); }
+.hours-cell .over { color: var(--color-red); }
+
+/* ---- Cards grid (Projects) ---- */
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--sp-4); }
+.project-card { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); transition: transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
+.project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.project-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); }
+.project-card-name { font-weight: 700; font-size: var(--fs-md); }
+.project-card-client { font-size: var(--fs-xs); color: var(--color-text-secondary); margin-top: 2px; }
+.project-card-meta { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--color-text-secondary); }
+.project-card-team { display: flex; align-items: center; }
+.project-card-team .avatar { margin-left: -8px; border: 2px solid var(--color-surface); }
+.project-card-team .avatar:first-child { margin-left: 0; }
+.project-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: var(--sp-3); border-top: 1px solid var(--color-border); }
+.project-card-budget { font-family: var(--font-mono); font-weight: 600; font-size: var(--fs-sm); }
+
+@media (max-width: 640px) {
+  .toolbar .select { flex: 1; min-width: 100px; }
+}
