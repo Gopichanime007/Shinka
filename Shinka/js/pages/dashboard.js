@@ -1,5 +1,6 @@
 (async function () {
   const content = document.getElementById('pageContent');
+  const ACT_ICON = { complete: ['fa-check', 'green'], comment: ['fa-comment', 'blue'], status: ['fa-arrows-rotate', 'purple'], create: ['fa-plus', 'cyan'], block: ['fa-ban', 'red'], assign: ['fa-user', 'orange'] };
 
   content.innerHTML = `
     <div class="page-header fade-in">
@@ -246,7 +247,6 @@
   }
 
   // ---------------- Activity ----------------
-  const ACT_ICON = { complete: ['fa-check', 'green'], comment: ['fa-comment', 'blue'], status: ['fa-arrows-rotate', 'purple'], create: ['fa-plus', 'cyan'], block: ['fa-ban', 'red'], assign: ['fa-user', 'orange'] };
   function renderActivity(activity, members) {
     const el = document.getElementById('activityList');
     el.innerHTML = activity.map(a => {
