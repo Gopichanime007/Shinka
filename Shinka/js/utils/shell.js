@@ -32,8 +32,8 @@ function renderShell({ active, title, isRoot = false }) {
       <div class="sidebar-scrim"></div>
       <aside class="sidebar">
         <div class="sidebar-brand">
-          <div class="brand-mark">P</div>
-          <span class="brand-name">Pulseboard</span>
+          <div class="brand-mark">S</div>
+          <span class="brand-name">Shinka</span>
         </div>
         <nav class="sidebar-nav">${navHtml}</nav>
         <div class="sidebar-footer">

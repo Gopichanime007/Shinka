@@ -61,7 +61,7 @@
       </div>
     </div>
 
-    <div class="app-footer">Pulseboard \u00b7 Project Tracker &mdash; local demo data, stored in your browser</div>
+    <div class="app-footer">Shinka \u00b7 Project Tracker &mdash; local demo data, stored in your browser</div>
   `;
 
   const [stats, projects, tasks, members, activity] = await Promise.all([
