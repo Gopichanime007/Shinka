@@ -206,6 +206,15 @@ class Store {
     this._persist();
     return this._data;
   }
+
+  async clearAllData() {
+    const d = await this._load();
+    d.projects = [];
+    d.tasks = [];
+    d.activity = [];
+    this._persist();
+    return d;
+  }
 }
 
 const store = new Store();
