@@ -1,6 +1,7 @@
 (async function () {
   const content = document.getElementById('pageContent');
-  const { PROJECT_STATUSES, PRIORITIES } = window.PT_CONST;
+  const currentRole = await PT_STORE.getCurrentRole();
+  const showTeam = currentRole?.label !== 'Technical';
 
   content.innerHTML = `
     <div class="page-header fade-in">
@@ -46,7 +47,7 @@
             <div class="field"><label>Budget (USD)</label><input class="input" type="number" min="0" id="p_budget"></div>
             <div class="field"><label>Progress (%)</label><input class="input" type="number" min="0" max="100" id="p_progress"></div>
           </div>
-          <div class="field"><label>Team members</label>
+          <div class="field" style="${showTeam ? '' : 'display:none;'}"><label>Team members</label>
             <div id="p_team" class="flex gap-2" style="flex-wrap:wrap;"></div>
           </div>
         </div>
@@ -58,14 +59,20 @@
     </div>
   `;
 
-  let projects = await PT_STORE.getProjects();
-  const tasks = await PT_STORE.getTasks();
-  const members = await PT_STORE.getMembers();
+  let [projects, tasks, members, statuses, priorities] = await Promise.all([
+    PT_STORE.getProjects(),
+    PT_STORE.getTasks(),
+    PT_STORE.getMembers(),
+    PT_STORE.getStatuses(),
+    PT_STORE.getPriorities(),
+  ]);
+  const statusLabels = statuses.map(s => s.label);
+  const priorityLabels = priorities.map(p => p.label);
 
   const filterStatus = document.getElementById('filterPStatus');
   const filterPriority = document.getElementById('filterPPriority');
-  PROJECT_STATUSES.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  PRIORITIES.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statusLabels.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
+  priorityLabels.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
   const searchInput = document.getElementById('projSearch');
 
   function applyFilters() {
@@ -112,7 +119,7 @@
           <span data-tooltip="Timeline">${PT_UI.fmtDateShort(p.startDate)} \u2192 ${PT_UI.fmtDateShort(p.endDate)}</span>
           <span data-tooltip="Tasks in this project">${taskCount} tasks</span>
         </div>
-        <div class="project-card-footer">
+        <div class="project-card-footer" style="${showTeam ? '' : 'display:none;'}">
           <div class="project-card-team">${team.map(m => PT_UI.memberAvatar(m)).join('') || '<span class="text-xs text-secondary">Unassigned</span>'}</div>
           <div class="project-card-budget">${PT_UI.fmtCurrency(p.budget)}</div>
         </div>
@@ -129,8 +136,8 @@
   const overlay = document.getElementById('projModalOverlay');
   const selStatus = document.getElementById('p_status');
   const selPriority = document.getElementById('p_priority');
-  PROJECT_STATUSES.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  PRIORITIES.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statusLabels.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
+  priorityLabels.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
   const teamWrap = document.getElementById('p_team');
   members.forEach(m => {
     teamWrap.insertAdjacentHTML('beforeend', `
@@ -147,8 +154,8 @@
     document.getElementById('p_client').value = p?.client || '';
     document.getElementById('p_startDate').value = p?.startDate || new Date().toISOString().slice(0, 10);
     document.getElementById('p_endDate').value = p?.endDate || '';
-    selStatus.value = p?.status || 'Planning';
-    selPriority.value = p?.priority || 'Medium';
+    selStatus.value = p?.status || statusLabels[0] || 'Planning';
+    selPriority.value = p?.priority || priorityLabels.find(label => label.toLowerCase() === 'medium') || priorityLabels[0] || 'Medium';
     document.getElementById('p_budget').value = p?.budget ?? '';
     document.getElementById('p_progress').value = p?.progress ?? 0;
     teamWrap.querySelectorAll('[data-team-check]').forEach(cb => cb.checked = (p?.team || []).includes(cb.value));
@@ -201,6 +208,7 @@
       if (ok) {
         await PT_STORE.deleteProject(p.id);
         projects = await PT_STORE.getProjects();
+        tasks = await PT_STORE.getTasks();
         render();
         PT_UI.toast('success', 'Project deleted');
       }

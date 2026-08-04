@@ -1,6 +1,7 @@
 (async function () {
   const content = document.getElementById('pageContent');
-  const { STATUSES, PRIORITIES } = window.PT_CONST;
+  const currentRole = await PT_STORE.getCurrentRole();
+  const showAssignee = currentRole?.label !== 'Technical';
 
   content.innerHTML = `
     <div class="page-header fade-in">
@@ -32,7 +33,7 @@
               <th data-sort="project">Project <i class="fa-solid fa-sort"></i></th>
               <th data-sort="status">Status <i class="fa-solid fa-sort"></i></th>
               <th data-sort="priority">Priority <i class="fa-solid fa-sort"></i></th>
-              <th>Assignee</th>
+              <th style="${showAssignee ? '' : 'display:none;'}">Assignee</th>
               <th data-sort="dueDate">Due <i class="fa-solid fa-sort"></i></th>
               <th>Hours (Est/Act)</th>
               <th></th>
@@ -56,7 +57,7 @@
           <div class="field"><label>Description</label><textarea class="textarea" id="f_description" placeholder="Add more detail (optional)"></textarea></div>
           <div class="form-row">
             <div class="field"><label>Project</label><select class="select" id="f_project"></select></div>
-            <div class="field"><label>Assigned to</label><select class="select" id="f_assignedTo"></select></div>
+            <div class="field" style="${showAssignee ? '' : 'display:none;'}"><label>Assigned to</label><select class="select" id="f_assignedTo"></select></div>
           </div>
           <div class="form-row">
             <div class="field"><label>Status</label><select class="select" id="f_status"></select></div>
@@ -79,15 +80,21 @@
     </div>
   `;
 
-  let tasks = await PT_STORE.getTasks();
-  const projects = await PT_STORE.getProjects();
-  const members = await PT_STORE.getMembers();
+  let [tasks, projects, members, statuses, priorities] = await Promise.all([
+    PT_STORE.getTasks(),
+    PT_STORE.getProjects(),
+    PT_STORE.getMembers(),
+    PT_STORE.getStatuses(),
+    PT_STORE.getPriorities(),
+  ]);
+  const defaultStatusLabel = statuses.find(s => s.is_default)?.label || statuses[0]?.label || 'Open';
+  const defaultPriorityLabel = priorities.find(p => p.label.toLowerCase() === 'medium')?.label || priorities[0]?.label || 'Medium';
 
   const filterStatus = document.getElementById('filterStatus');
   const filterPriority = document.getElementById('filterPriority');
   const filterProject = document.getElementById('filterProject');
-  STATUSES.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  PRIORITIES.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statuses.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s.label}">${s.label}</option>`));
+  priorities.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p.label}">${p.label}</option>`));
   projects.forEach(p => filterProject.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
 
   // Prefill search from ?q= (dashboard search hand-off)
@@ -138,7 +145,7 @@
         <td>${proj ? proj.name : t.project}</td>
         <td>${PT_UI.statusBadge(t.status)}</td>
         <td>${PT_UI.priorityFlag(t.priority)}</td>
-        <td>${PT_UI.memberAvatar(m)}</td>
+        <td style="${showAssignee ? '' : 'display:none;'}">${PT_UI.memberAvatar(m)}</td>
         <td>${PT_UI.fmtDateShort(t.dueDate)}</td>
         <td class="hours-cell"><span class="${overActual ? 'over' : ''}">${t.actualHours ?? 0}</span> / ${t.estimatedHours ?? 0}h</td>
         <td>
@@ -171,19 +178,19 @@
   const selPriority = document.getElementById('f_priority');
   projects.forEach(p => selProject.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
   members.forEach(m => selAssignee.insertAdjacentHTML('beforeend', `<option value="${m.id}">${m.name}</option>`));
-  STATUSES.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  PRIORITIES.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statuses.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s.label}">${s.label}</option>`));
+  priorities.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p.label}">${p.label}</option>`));
 
   let editingId = null;
   function openModal(task = null) {
     editingId = task ? task.id : null;
     document.getElementById('taskModalTitle').textContent = task ? 'Edit Task' : 'New Task';
     document.getElementById('f_name').value = task?.name || '';
-    document.getElementById('f_description').value = task?.description || '';
+    document.getElementById('f_description').value = task?.description || ''; 
     selProject.value = task?.project || projects[0]?.id || '';
     selAssignee.value = task?.assignedTo || members[0]?.id || '';
-    selStatus.value = task?.status || 'To Do';
-    selPriority.value = task?.priority || 'Medium';
+    selStatus.value = task?.status || defaultStatusLabel;
+    selPriority.value = task?.priority || defaultPriorityLabel;
     document.getElementById('f_estimatedHours').value = task?.estimatedHours ?? '';
     document.getElementById('f_actualHours').value = task?.actualHours ?? 0;
     document.getElementById('f_dueDate').value = task?.dueDate || '';
@@ -206,7 +213,7 @@
       name,
       description: document.getElementById('f_description').value.trim(),
       project: selProject.value,
-      assignedTo: selAssignee.value,
+      assignedTo: showAssignee ? selAssignee.value : null,
       status: selStatus.value,
       priority: selPriority.value,
       estimatedHours: Number(document.getElementById('f_estimatedHours').value) || 0,
@@ -240,7 +247,7 @@
       }
     } else if (quick) {
       const t = tasks.find(t => t.id === quick.dataset.quickcomplete);
-      const newStatus = t.status === 'Completed' ? 'To Do' : 'Completed';
+      const newStatus = t.status === 'Completed' ? defaultStatusLabel : 'Completed';
       await PT_STORE.updateTaskStatus(t.id, newStatus);
       tasks = await PT_STORE.getTasks();
       render();

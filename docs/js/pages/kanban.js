@@ -1,6 +1,7 @@
 (async function () {
   const content = document.getElementById('pageContent');
-  const { STATUSES, PRIORITIES } = window.PT_CONST;
+  const currentRole = await PT_STORE.getCurrentRole();
+  const showAssignee = currentRole?.label !== 'Technical';
 
   content.innerHTML = `
     <div class="page-header fade-in">
@@ -13,7 +14,7 @@
 
     <div class="toolbar fade-in">
       <select class="select" id="filterKProject" data-tooltip="Filter by project"><option value="">All projects</option></select>
-      <select class="select" id="filterKAssignee" data-tooltip="Filter by assignee"><option value="">Everyone</option></select>
+      <select class="select" id="filterKAssignee" data-tooltip="Filter by assignee" style="${showAssignee ? '' : 'display:none;'}"><option value="">Everyone</option></select>
       <span class="toolbar-count" id="kanbanCount"></span>
     </div>
 
@@ -31,7 +32,7 @@
           <div class="field"><label>Description</label><textarea class="textarea" id="f_description" placeholder="Add more detail (optional)"></textarea></div>
           <div class="form-row">
             <div class="field"><label>Project</label><select class="select" id="f_project"></select></div>
-            <div class="field"><label>Assigned to</label><select class="select" id="f_assignedTo"></select></div>
+            <div class="field" style="${showAssignee ? '' : 'display:none;'}"><label>Assigned to</label><select class="select" id="f_assignedTo"></select></div>
           </div>
           <div class="form-row">
             <div class="field"><label>Status</label><select class="select" id="f_status"></select></div>
@@ -51,9 +52,14 @@
     </div>
   `;
 
-  let tasks = await PT_STORE.getTasks();
-  const projects = await PT_STORE.getProjects();
-  const members = await PT_STORE.getMembers();
+  let [tasks, projects, members, statuses, priorities] = await Promise.all([
+    PT_STORE.getTasks(),
+    PT_STORE.getProjects(),
+    PT_STORE.getMembers(),
+    PT_STORE.getStatuses(),
+    PT_STORE.getPriorities(),
+  ]);
+  const defaultStatusLabel = statuses.find(s => s.is_default)?.label || statuses[0]?.label || 'Open';
 
   const filterProject = document.getElementById('filterKProject');
   const filterAssignee = document.getElementById('filterKAssignee');
@@ -63,7 +69,7 @@
   function filteredTasks() {
     return tasks.filter(t =>
       (!filterProject.value || t.project === filterProject.value) &&
-      (!filterAssignee.value || t.assignedTo === filterAssignee.value)
+      (showAssignee ? (!filterAssignee.value || t.assignedTo === filterAssignee.value) : true)
     );
   }
 
@@ -87,9 +93,10 @@
     const rows = filteredTasks();
     document.getElementById('kanbanCount').textContent = `${rows.length} of ${tasks.length} tasks`;
     const board = document.getElementById('kanbanBoard');
-    board.innerHTML = STATUSES.map(status => {
+    board.innerHTML = statuses.map(statusObj => {
+      const status = statusObj.label;
       const colTasks = rows.filter(t => t.status === status);
-      const color = PT_UI.STATUS_COLOR[status];
+      const color = PT_UI.STATUS_COLOR[status] || 'slate';
       return `
       <div class="kanban-col">
         <div class="kanban-col-header">
@@ -117,7 +124,7 @@
       <div class="flex items-center gap-2">${PT_UI.priorityFlag(t.priority)}</div>
       <div class="kanban-card-footer">
         <span class="kanban-due-pill ${dueClass(t)}">${dueLabel(t)}</span>
-        ${PT_UI.memberAvatar(m)}
+        ${showAssignee ? PT_UI.memberAvatar(m) : ''}
       </div>
     </div>`;
   }
@@ -170,8 +177,8 @@
   const selPriority = document.getElementById('f_priority');
   projects.forEach(p => selProject.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
   members.forEach(m => selAssignee.insertAdjacentHTML('beforeend', `<option value="${m.id}">${m.name}</option>`));
-  STATUSES.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  PRIORITIES.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statuses.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s.label}">${s.label}</option>`));
+  priorities.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p.label}">${p.label}</option>`));
 
   let editingId = null;
   function openModal(task, defaultStatus) {
@@ -181,7 +188,7 @@
     document.getElementById('f_description').value = task?.description || '';
     selProject.value = task?.project || projects[0]?.id || '';
     selAssignee.value = task?.assignedTo || members[0]?.id || '';
-    selStatus.value = task?.status || defaultStatus || 'To Do';
+    selStatus.value = task?.status || defaultStatus || defaultStatusLabel;
     selPriority.value = task?.priority || 'Medium';
     document.getElementById('f_estimatedHours').value = task?.estimatedHours ?? '';
     document.getElementById('f_actualHours').value = task?.actualHours ?? 0;
@@ -203,7 +210,7 @@
       name,
       description: document.getElementById('f_description').value.trim(),
       project: selProject.value,
-      assignedTo: selAssignee.value,
+      assignedTo: showAssignee ? selAssignee.value : null,
       status: selStatus.value,
       priority: selPriority.value,
       estimatedHours: Number(document.getElementById('f_estimatedHours').value) || 0,

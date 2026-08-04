@@ -4,14 +4,16 @@
 
 const PT_UI = (() => {
   const STATUS_COLOR = {
-    'Backlog': 'slate', 'To Do': 'blue', 'In Progress': 'orange',
-    'In Review': 'purple', 'Blocked': 'red', 'Completed': 'green',
-    'Planning': 'slate', 'Active': 'blue', 'On Hold': 'orange',
+    'Backlog': 'slate', 'Open': 'blue', 'To Do': 'blue', 'In Progress': 'orange',
+    'In Review': 'purple', 'UAT/User Testing': 'purple', 'Awaiting Client Response': 'slate',
+    'Blocked': 'red', 'Hold': 'red', 'Completed': 'green',
+    'Planning': 'slate', 'Active': 'blue',
   };
   const STATUS_ICON = {
-    'Backlog': 'fa-inbox', 'To Do': 'fa-circle', 'In Progress': 'fa-spinner',
-    'In Review': 'fa-eye', 'Blocked': 'fa-ban', 'Completed': 'fa-circle-check',
-    'Planning': 'fa-compass', 'Active': 'fa-bolt', 'On Hold': 'fa-pause',
+    'Backlog': 'fa-inbox', 'Open': 'fa-circle', 'To Do': 'fa-circle', 'In Progress': 'fa-spinner',
+    'In Review': 'fa-eye', 'UAT/User Testing': 'fa-users', 'Awaiting Client Response': 'fa-comment-dots',
+    'Blocked': 'fa-ban', 'Hold': 'fa-pause', 'Completed': 'fa-circle-check',
+    'Planning': 'fa-compass', 'Active': 'fa-bolt',
   };
   const PRIORITY_ICON = { Urgent: 'fa-triangle-exclamation', High: 'fa-arrow-up', Medium: 'fa-minus', Low: 'fa-arrow-down' };
 

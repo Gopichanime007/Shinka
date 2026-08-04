@@ -9,7 +9,7 @@
         <div class="sub">Here's what's happening across your projects today.</div>
       </div>
       <div class="flex gap-2">
-        <button class="btn btn-secondary btn-sm" data-tooltip="Download a snapshot of this dashboard"><i class="fa-solid fa-arrow-up-from-bracket"></i>&nbsp; Export</button>
+        <button class="btn btn-secondary btn-sm" id="dashboardExportBtn" data-tooltip="Export workspace backup"><i class="fa-solid fa-file-arrow-down"></i>&nbsp; Backup</button>
         <a class="btn btn-primary btn-sm" href="pages/tasks.html"><i class="fa-solid fa-plus"></i>&nbsp; New Task</a>
       </div>
     </div>
@@ -50,7 +50,7 @@
           <div class="widget-header"><h3>Upcoming Deadlines</h3><a href="pages/tasks.html">View all</a></div>
           <div id="deadlinesList"></div>
         </div>
-        <div class="card widget-card fade-in">
+        <div class="card widget-card fade-in" style="${showWorkload ? '' : 'display:none;'}">
           <div class="widget-header"><h3>Team Workload</h3><span class="text-xs text-secondary" data-tooltip="Open + in-progress tasks per teammate">Active tasks</span></div>
           <div id="workloadList"></div>
         </div>
@@ -64,6 +64,8 @@
     <div class="app-footer">Shinka \u00b7 Project Tracker &mdash; local demo data, stored in your browser</div>
   `;
 
+  const currentRole = await PT_STORE.getCurrentRole();
+  const showWorkload = currentRole?.label !== 'Technical';
   const [stats, projects, tasks, members, activity] = await Promise.all([
     PT_STORE.getStats(), PT_STORE.getProjects(), PT_STORE.getTasks(), PT_STORE.getMembers(), PT_STORE.getActivity(6)
   ]);
@@ -74,8 +76,21 @@
   renderProjectProgress(projects);
   renderRecentTasks(tasks, members);
   renderDeadlines(tasks);
-  renderWorkload(tasks, members);
+  if (showWorkload) renderWorkload(tasks, members);
   renderActivity(activity, members);
+  document.getElementById('dashboardExportBtn').addEventListener('click', async () => {
+    const data = await PT_STORE.exportDatabase();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `shinka-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    PT_UI.toast('success', 'Backup downloaded');
+  });
 
   // ---------------- KPIs ----------------
   function renderKpis(stats) {

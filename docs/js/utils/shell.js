@@ -122,7 +122,61 @@ function openSettingsModal() {
       setTimeout(() => location.reload(), 700);
     }
   });
+  const roleSelect = overlay.querySelector('#settingsRole');
+  roles.forEach(role => roleSelect.insertAdjacentHTML('beforeend', `<option value="${role.role_id}"${role.role_id === currentRole?.role_id ? ' selected' : ''}>${role.label}</option>`));
 
+  function downloadJson(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  overlay.querySelector('[data-act="export"]').addEventListener('click', async () => {
+    const data = await PT_STORE.exportDatabase();
+    downloadJson(`shinka-backup-${new Date().toISOString().slice(0, 10)}.json`, data);
+    PT_UI.toast('success', 'Backup exported');
+  });
+
+  const fileInput = overlay.querySelector('#backupFileInput');
+  overlay.querySelector('[data-act="import"]').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    let payload;
+    try {
+      payload = JSON.parse(text);
+    } catch (err) {
+      PT_UI.toast('error', 'Invalid backup file');
+      return;
+    }
+    const ok = await PT_UI.confirmDialog({
+      title: 'Import backup?',
+      message: 'This replaces your current workspace data with the selected backup file.',
+      confirmLabel: 'Import',
+      tone: 'info',
+    });
+    if (!ok) return;
+    try {
+      await PT_STORE.importDatabase(payload);
+      close();
+      PT_UI.toast('success', 'Backup imported', 'Reloading…');
+      setTimeout(() => location.reload(), 700);
+    } catch (err) {
+      PT_UI.toast('error', 'Import failed', 'The file could not be loaded.');
+    }
+  });
+
+  roleSelect.addEventListener('change', async (event) => {
+    await PT_STORE.saveUserSettings({ role_id: event.target.value });
+    PT_UI.toast('success', 'Workspace role updated');
+  });
   overlay.querySelector('[data-act="reseed"]').addEventListener('click', async () => {
     const ok = await PT_UI.confirmDialog({
       title: 'Restore sample data?',
