@@ -263,6 +263,8 @@
       openModal(t);
     } else if (delBtn) {
       const t = tasks.find(t => t.id === delBtn.dataset.del);
+      if (!t) return;
+
       const ok = await PT_UI.confirmDialog({
         title: 'Delete this task?',
         message: `“${PT_UI.escapeHtml(t.name)}” will be permanently removed. This can't be undone.`,
