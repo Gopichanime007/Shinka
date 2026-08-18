@@ -139,10 +139,10 @@
       <tr data-id="${t.id}">
         <td><div class="task-check ${t.status === 'Completed' ? 'done' : ''}" data-quickcomplete="${t.id}" data-tooltip="${t.status === 'Completed' ? 'Completed' : 'Mark complete'}" style="cursor:pointer">${t.status === 'Completed' ? '<i class="fa-solid fa-check"></i>' : ''}</div></td>
         <td>
-          <div class="cell-title" data-tooltip="${PT_UI.escapeHtml(t.description || t.name)}">${t.name}</div>
+          <div class="cell-title" data-tooltip="${PT_UI.escapeHtml(t.name)}">${PT_UI.escapeHtml(t.name)}</div>
           <div class="cell-sub">${t.id}</div>
         </td>
-        <td>${proj ? proj.name : t.project}</td>
+        <td>${PT_UI.escapeHtml(proj ? proj.name : t.project)}</td>
         <td>${PT_UI.statusBadge(t.status)}</td>
         <td>${PT_UI.priorityFlag(t.priority)}</td>
         <td style="${showAssignee ? '' : 'display:none;'}">${PT_UI.memberAvatar(m)}</td>
