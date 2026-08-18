@@ -246,7 +246,7 @@
     tasks = await PT_STORE.getTasks();
     closeModal();
     render();
-    PPT_UI.toast(
+    PT_UI.toast(
       'success',
       editingId ? 'Task updated' : 'Task created',
       `“${PT_UI.escapeHtml(name)}” was saved.`
