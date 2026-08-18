@@ -83,11 +83,16 @@
 
   function applyFilters() {
     const q = searchInput.value.trim().toLowerCase();
-    return projects.filter(p =>
-      (!q || p.name.toLowerCase().includes(q) || p.client.toLowerCase().includes(q)) &&
-      (!filterStatus.value || p.status === filterStatus.value) &&
-      (!filterPriority.value || p.priority === filterPriority.value)
-    );
+    return projects.filter(p => {
+      const name = String(p.name || '').toLowerCase();
+      const client = String(p.client || '').toLowerCase();
+
+      return (
+        (!q || name.includes(q) || client.includes(q)) &&
+        (!filterStatus.value || p.status === filterStatus.value) &&
+        (!filterPriority.value || p.priority === filterPriority.value)
+      );
+    });
   }
 
   function render() {
