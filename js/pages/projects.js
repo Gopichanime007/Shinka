@@ -71,8 +71,14 @@
 
   const filterStatus = document.getElementById('filterPStatus');
   const filterPriority = document.getElementById('filterPPriority');
-  statusLabels.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  priorityLabels.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statusLabels.forEach(s => filterStatus.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(s)}">${PT_UI.escapeHtml(s)}</option>`
+  ));
+  priorityLabels.forEach(p => filterPriority.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p)}">${PT_UI.escapeHtml(p)}</option>`
+  ));
   const searchInput = document.getElementById('projSearch');
 
   function applyFilters() {
@@ -99,15 +105,15 @@
       const taskCount = tasks.filter(t => t.project === p.id).length;
       const team = (p.team || []).map(id => members.find(m => m.id === id)).filter(Boolean);
       return `
-      <div class="card project-card fade-in" data-id="${p.id}">
+      <div class="card project-card fade-in" data-id="${PT_UI.escapeHtml(p.id)}">
         <div class="project-card-top">
           <div>
-            <div class="project-card-name">${p.name}</div>
-            <div class="project-card-client">${p.client}</div>
+            <div class="project-card-name">${PT_UI.escapeHtml(p.name)}</div>
+<div class="project-card-client">${PT_UI.escapeHtml(p.client)}</div>
           </div>
           <div class="cell-actions" style="opacity:1;">
-            <button class="icon-btn btn-sm" data-edit="${p.id}" data-tooltip="Edit project"><i class="fa-solid fa-pen"></i></button>
-            <button class="icon-btn btn-sm" data-del="${p.id}" data-tooltip="Delete project"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="icon-btn btn-sm" data-edit="${PT_UI.escapeHtml(p.id)}" data-tooltip="Edit project"><i class="fa-solid fa-pen"></i></button>
+<button class="icon-btn btn-sm" data-del="${PT_UI.escapeHtml(p.id)}" data-tooltip="Delete project"><i class="fa-solid fa-trash-can"></i></button>
           </div>
         </div>
         <div class="flex gap-2 items-center">${PT_UI.statusBadge(p.status)}${PT_UI.priorityFlag(p.priority)}</div>
@@ -136,14 +142,28 @@
   const overlay = document.getElementById('projModalOverlay');
   const selStatus = document.getElementById('p_status');
   const selPriority = document.getElementById('p_priority');
-  statusLabels.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s}">${s}</option>`));
-  priorityLabels.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  statusLabels.forEach(s => selStatus.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(s)}">${PT_UI.escapeHtml(s)}</option>`
+  ));
+  ppriorityLabels.forEach(p => selPriority.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p)}">${PT_UI.escapeHtml(p)}</option>`
+  ));
   const teamWrap = document.getElementById('p_team');
   members.forEach(m => {
     teamWrap.insertAdjacentHTML('beforeend', `
-      <label class="flex items-center gap-2 text-xs" style="cursor:pointer; border:1px solid var(--color-border); padding:5px 10px 5px 6px; border-radius: var(--radius-full);">
-        <input type="checkbox" class="row-check" value="${m.id}" data-team-check> ${PT_UI.memberAvatar(m)} ${m.name}
-      </label>`);
+    <label class="flex items-center gap-2 text-xs" style="cursor:pointer; border:1px solid var(--color-border); padding:5px 10px 5px 6px; border-radius: var(--radius-full);">
+      <input
+        type="checkbox"
+        class="row-check"
+        value="${PT_UI.escapeHtml(m.id)}"
+        data-team-check
+      >
+      ${PT_UI.memberAvatar(m)}
+      ${PT_UI.escapeHtml(m.name)}
+    </label>
+  `);
   });
 
   let editingId = null;
@@ -189,20 +209,29 @@
     projects = await PT_STORE.getProjects();
     closeModal();
     render();
-    PT_UI.toast('success', editingId ? 'Project updated' : 'Project created', `\u201c${name}\u201d was saved.`);
+    PT_UI.toast(
+      'success',
+      editingId ? 'Project updated' : 'Project created',
+      `“${PT_UI.escapeHtml(name)}” was saved.`
+    );
   });
 
   document.getElementById('projectGrid').addEventListener('click', async (e) => {
     const editBtn = e.target.closest('[data-edit]');
     const delBtn = e.target.closest('[data-del]');
     if (editBtn) {
-      openModal(projects.find(p => p.id === editBtn.dataset.edit));
+      const p = projects.find(p => p.id === editBtn.dataset.edit);
+      if (!p) return;
+
+      openModal(p);
     } else if (delBtn) {
       const p = projects.find(p => p.id === delBtn.dataset.del);
+      if (!p) return;
+
       const taskCount = tasks.filter(t => t.project === p.id).length;
       const ok = await PT_UI.confirmDialog({
         title: 'Delete this project?',
-        message: `\u201c${p.name}\u201d and its ${taskCount} associated task${taskCount === 1 ? '' : 's'} will be permanently removed.`,
+        message: `“${PT_UI.escapeHtml(p.name)}” and its ${taskCount} associated task${taskCount === 1 ? '' : 's'} will be permanently removed.`,
         confirmLabel: 'Delete project'
       });
       if (ok) {
