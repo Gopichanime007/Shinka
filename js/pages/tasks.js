@@ -120,16 +120,27 @@
 
   function applyFilters() {
     const q = searchInput.value.trim().toLowerCase();
-    let out = tasks.filter(t =>
-      (!q || t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)) &&
-      (!filterStatus.value || t.status === filterStatus.value) &&
-      (!filterPriority.value || t.priority === filterPriority.value) &&
-      (!filterProject.value || t.project === filterProject.value)
-    );
+
+    let out = tasks.filter(t => {
+      const name = String(t.name || '').toLowerCase();
+      const id = String(t.id || '').toLowerCase();
+
+      return (
+        (!q || name.includes(q) || id.includes(q)) &&
+        (!filterStatus.value || t.status === filterStatus.value) &&
+        (!filterPriority.value || t.priority === filterPriority.value) &&
+        (!filterProject.value || t.project === filterProject.value)
+      );
+    });
 
     out.sort((a, b) => {
-      let av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
-      if (typeof av === 'number') return (av - bv) * sortDir;
+      const av = a[sortKey] ?? '';
+      const bv = b[sortKey] ?? '';
+
+      if (typeof av === 'number') {
+        return (av - bv) * sortDir;
+      }
+
       return String(av).localeCompare(String(bv)) * sortDir;
     });
 
