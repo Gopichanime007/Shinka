@@ -223,8 +223,8 @@
     el.innerHTML = (active.length ? active : projects.slice(0, 5)).map(p => `
       <div class="proj-row">
         <div class="proj-info">
-          <div class="proj-name" data-tooltip="${p.name}">${p.name}</div>
-          <div class="proj-client">${p.client} \u00b7 ${PT_UI.statusBadge(p.status)}</div>
+          <div class="proj-name" data-tooltip="${PT_UI.escapeHtml(p.name)}">${PT_UI.escapeHtml(p.name)}</div>
+<div class="proj-client">${PT_UI.escapeHtml(p.client)} · ${PT_UI.statusBadge(p.status)}</div>
         </div>
         <div class="proj-bar-wrap">
           <div class="proj-bar-track"><div class="proj-bar-fill" style="width:${p.progress}%; background:var(--color-${PT_UI.STATUS_COLOR[p.status] || 'blue'})"></div></div>
@@ -245,8 +245,8 @@
       <div class="task-row">
         <div class="task-check ${done ? 'done' : ''}">${done ? '<i class="fa-solid fa-check"></i>' : ''}</div>
         <div class="task-main">
-          <div class="task-title" data-tooltip="${t.name}">${t.name}</div>
-          <div class="task-meta"><span>${t.project}</span>\u00b7${PT_UI.priorityFlag(t.priority)}</div>
+          <div class="task-title" data-tooltip="${PT_UI.escapeHtml(t.name)}">${PT_UI.escapeHtml(t.name)}</div>
+<div class="task-meta"><span>${PT_UI.escapeHtml(t.project)}</span>·${PT_UI.priorityFlag(t.priority)}</div>
         </div>
         <div class="task-row-right">
           ${PT_UI.statusBadge(t.status)}
@@ -276,7 +276,7 @@
       <div class="deadline-item">
         <div class="deadline-date-box"><div class="d">${d.getDate()}</div><div class="m">${d.toLocaleDateString('en-US', { month: 'short' })}</div></div>
         <div class="deadline-info">
-          <div class="deadline-title" data-tooltip="${t.name}">${t.name}</div>
+          <div class="deadline-title" data-tooltip="${t.name}">${t.name}</div><div class="deadline-title" data-tooltip="${PT_UI.escapeHtml(t.name)}">${PT_UI.escapeHtml(t.name)}</div>
           <div class="deadline-days" style="color:${dayColor}">${overdue ? `${Math.abs(t.days)}d overdue` : t.days === 0 ? 'Due today' : `Due in ${t.days}d`}</div>
         </div>
       </div>`;
@@ -291,7 +291,7 @@
     el.innerHTML = counts.sort((a, b) => b.count - a.count).map(({ m, count }) => `
       <div class="workload-item">
         ${PT_UI.memberAvatar(m)}
-        <div class="workload-name">${m.name}</div>
+        <div class="workload-name">${PT_UI.escapeHtml(m.name)}</div>
         <div class="workload-track"><div class="workload-fill" style="width:${(count / max) * 100}%; background:var(--color-${m.color})"></div></div>
         <div class="workload-count mono-num">${count}</div>
       </div>
