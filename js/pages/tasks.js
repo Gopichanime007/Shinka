@@ -246,7 +246,11 @@
     tasks = await PT_STORE.getTasks();
     closeModal();
     render();
-    PT_UI.toast('success', editingId ? 'Task updated' : 'Task created', `\u201c${name}\u201d was saved.`);
+    PPT_UI.toast(
+      'success',
+      editingId ? 'Task updated' : 'Task created',
+      `“${PT_UI.escapeHtml(name)}” was saved.`
+    );
   });
 
   // ---------------- Row actions (delegated) ----------------
