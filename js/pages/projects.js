@@ -146,7 +146,7 @@
     'beforeend',
     `<option value="${PT_UI.escapeHtml(s)}">${PT_UI.escapeHtml(s)}</option>`
   ));
-  ppriorityLabels.forEach(p => selPriority.insertAdjacentHTML(
+  priorityLabels.forEach(p => selPriority.insertAdjacentHTML(
     'beforeend',
     `<option value="${PT_UI.escapeHtml(p)}">${PT_UI.escapeHtml(p)}</option>`
   ));
