@@ -145,11 +145,11 @@
       const proj = projects.find(p => p.id === t.project);
       const overActual = t.actualHours > t.estimatedHours;
       return `
-      <tr data-id="${t.id}">
-        <td><div class="task-check ${t.status === 'Completed' ? 'done' : ''}" data-quickcomplete="${t.id}" data-tooltip="${t.status === 'Completed' ? 'Completed' : 'Mark complete'}" style="cursor:pointer">${t.status === 'Completed' ? '<i class="fa-solid fa-check"></i>' : ''}</div></td>
+      <tr data-id="${PT_UI.escapeHtml(t.id)}">
+        <td><div class="task-check ${t.status === 'Completed' ? 'done' : ''}" data-quickcomplete="${PT_UI.escapeHtml(t.id)}" data-tooltip="${t.status === 'Completed' ? 'Completed' : 'Mark complete'}" style="cursor:pointer">${t.status === 'Completed' ? '<i class="fa-solid fa-check"></i>' : ''}</div></td>
         <td>
           <div class="cell-title" data-tooltip="${PT_UI.escapeHtml(t.name)}">${PT_UI.escapeHtml(t.name)}</div>
-          <div class="cell-sub">${t.id}</div>
+          <div class="cell-sub">${PT_UI.escapeHtml(t.id)}</div>
         </td>
         <td>${PT_UI.escapeHtml(proj ? proj.name : t.project)}</td>
         <td>${PT_UI.statusBadge(t.status)}</td>
@@ -159,8 +159,8 @@
         <td class="hours-cell"><span class="${overActual ? 'over' : ''}">${t.actualHours ?? 0}</span> / ${t.estimatedHours ?? 0}h</td>
         <td>
           <div class="cell-actions">
-            <button class="icon-btn btn-sm" data-edit="${t.id}" data-tooltip="Edit task"><i class="fa-solid fa-pen"></i></button>
-            <button class="icon-btn btn-sm" data-del="${t.id}" data-tooltip="Delete task"><i class="fa-solid fa-trash-can"></i></button>
+            <button class="icon-btn btn-sm" data-edit="${PT_UI.escapeHtml(t.id)}" data-tooltip="Edit task"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn btn-sm" data-del="${PT_UI.escapeHtml(t.id)}" data-tooltip="Delete task"><i class="fa-solid fa-trash-can"></i></button>
           </div>
         </td>
       </tr>`;
