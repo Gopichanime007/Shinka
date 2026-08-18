@@ -259,7 +259,11 @@
       openModal(t);
     } else if (delBtn) {
       const t = tasks.find(t => t.id === delBtn.dataset.del);
-      const ok = await PT_UI.confirmDialog({ title: 'Delete this task?', message: `\u201c${t.name}\u201d will be permanently removed. This can't be undone.`, confirmLabel: 'Delete task' });
+      const ok = await PT_UI.confirmDialog({
+        title: 'Delete this task?',
+        message: `“${PT_UI.escapeHtml(t.name)}” will be permanently removed. This can't be undone.`,
+        confirmLabel: 'Delete task'
+      });
       if (ok) {
         await PT_STORE.deleteTask(t.id);
         tasks = await PT_STORE.getTasks();
