@@ -93,9 +93,18 @@
   const filterStatus = document.getElementById('filterStatus');
   const filterPriority = document.getElementById('filterPriority');
   const filterProject = document.getElementById('filterProject');
-  statuses.forEach(s => filterStatus.insertAdjacentHTML('beforeend', `<option value="${s.label}">${s.label}</option>`));
-  priorities.forEach(p => filterPriority.insertAdjacentHTML('beforeend', `<option value="${p.label}">${p.label}</option>`));
-  projects.forEach(p => filterProject.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
+  statuses.forEach(s => filterStatus.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(s.label)}">${PT_UI.escapeHtml(s.label)}</option>`
+  ));
+  priorities.forEach(p => filterPriority.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p.label)}">${PT_UI.escapeHtml(p.label)}</option>`
+  ));
+  projects.forEach(p => filterProject.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p.id)}">${PT_UI.escapeHtml(p.name)}</option>`
+  ));
 
   // Prefill search from ?q= (dashboard search hand-off)
   const params = new URLSearchParams(window.location.search);
@@ -176,17 +185,29 @@
   const selAssignee = document.getElementById('f_assignedTo');
   const selStatus = document.getElementById('f_status');
   const selPriority = document.getElementById('f_priority');
-  projects.forEach(p => selProject.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name}</option>`));
-  members.forEach(m => selAssignee.insertAdjacentHTML('beforeend', `<option value="${m.id}">${m.name}</option>`));
-  statuses.forEach(s => selStatus.insertAdjacentHTML('beforeend', `<option value="${s.label}">${s.label}</option>`));
-  priorities.forEach(p => selPriority.insertAdjacentHTML('beforeend', `<option value="${p.label}">${p.label}</option>`));
+  projects.forEach(p => selProject.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p.id)}">${PT_UI.escapeHtml(p.name)}</option>`
+  ));
+  members.forEach(m => selAssignee.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(m.id)}">${PT_UI.escapeHtml(m.name)}</option>`
+  ));
+  statuses.forEach(s => selStatus.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(s.label)}">${PT_UI.escapeHtml(s.label)}</option>`
+  ));
+  priorities.forEach(p => selPriority.insertAdjacentHTML(
+    'beforeend',
+    `<option value="${PT_UI.escapeHtml(p.label)}">${PT_UI.escapeHtml(p.label)}</option>`
+  ));
 
   let editingId = null;
   function openModal(task = null) {
     editingId = task ? task.id : null;
     document.getElementById('taskModalTitle').textContent = task ? 'Edit Task' : 'New Task';
     document.getElementById('f_name').value = task?.name || '';
-    document.getElementById('f_description').value = task?.description || ''; 
+    document.getElementById('f_description').value = task?.description || '';
     selProject.value = task?.project || projects[0]?.id || '';
     selAssignee.value = task?.assignedTo || members[0]?.id || '';
     selStatus.value = task?.status || defaultStatusLabel;
