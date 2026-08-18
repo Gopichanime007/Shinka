@@ -88,7 +88,12 @@
     PT_STORE.getPriorities(),
   ]);
   const defaultStatusLabel = statuses.find(s => s.is_default)?.label || statuses[0]?.label || 'Open';
-  const defaultPriorityLabel = priorities.find(p => p.label.toLowerCase() === 'medium')?.label || priorities[0]?.label || 'Medium';
+  const defaultPriorityLabel =
+    priorities.find(
+      p => String(p.label || '').toLowerCase() === 'medium'
+    )?.label ||
+    priorities[0]?.label ||
+    'Medium';
 
   const filterStatus = document.getElementById('filterStatus');
   const filterPriority = document.getElementById('filterPriority');
@@ -121,11 +126,13 @@
       (!filterPriority.value || t.priority === filterPriority.value) &&
       (!filterProject.value || t.project === filterProject.value)
     );
+
     out.sort((a, b) => {
       let av = a[sortKey] ?? '', bv = b[sortKey] ?? '';
       if (typeof av === 'number') return (av - bv) * sortDir;
       return String(av).localeCompare(String(bv)) * sortDir;
     });
+
     return out;
   }
 
@@ -246,10 +253,11 @@
     tasks = await PT_STORE.getTasks();
     closeModal();
     render();
+
     PT_UI.toast(
       'success',
       editingId ? 'Task updated' : 'Task created',
-      `“${PT_UI.escapeHtml(name)}” was saved.`
+      `“${name}” was saved.`
     );
   });
 
@@ -269,7 +277,7 @@
 
       const ok = await PT_UI.confirmDialog({
         title: 'Delete this task?',
-        message: `“${PT_UI.escapeHtml(t.name)}” will be permanently removed. This can't be undone.`,
+        message: `“${t.name}” will be permanently removed. This can't be undone.`,
         confirmLabel: 'Delete task'
       });
       if (ok) {
