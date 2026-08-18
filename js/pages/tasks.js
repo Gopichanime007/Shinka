@@ -260,6 +260,8 @@
     const quick = e.target.closest('[data-quickcomplete]');
     if (editBtn) {
       const t = tasks.find(t => t.id === editBtn.dataset.edit);
+      if (!t) return;
+
       openModal(t);
     } else if (delBtn) {
       const t = tasks.find(t => t.id === delBtn.dataset.del);
@@ -278,11 +280,22 @@
       }
     } else if (quick) {
       const t = tasks.find(t => t.id === quick.dataset.quickcomplete);
-      const newStatus = t.status === 'Completed' ? defaultStatusLabel : 'Completed';
+      if (!t) return;
+
+      const newStatus = t.status === 'Completed'
+        ? defaultStatusLabel
+        : 'Completed';
+
       await PT_STORE.updateTaskStatus(t.id, newStatus);
       tasks = await PT_STORE.getTasks();
       render();
-      PT_UI.toast('success', newStatus === 'Completed' ? 'Task completed \u{1F389}' : 'Task reopened');
+
+      PT_UI.toast(
+        'success',
+        newStatus === 'Completed'
+          ? 'Task completed \u{1F389}'
+          : 'Task reopened'
+      );
     }
   });
 })();
