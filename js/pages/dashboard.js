@@ -1,5 +1,7 @@
 (async function () {
   const content = document.getElementById('pageContent');
+  const currentRole = await PT_STORE.getCurrentRole();
+  const showWorkload = currentRole?.label !== 'Technical';
   const ACT_ICON = { complete: ['fa-check', 'green'], comment: ['fa-comment', 'blue'], status: ['fa-arrows-rotate', 'purple'], create: ['fa-plus', 'cyan'], block: ['fa-ban', 'red'], assign: ['fa-user', 'orange'] };
 
   content.innerHTML = `
@@ -64,8 +66,6 @@
     <div class="app-footer">Shinka \u00b7 Project Tracker &mdash; local demo data, stored in your browser</div>
   `;
 
-  const currentRole = await PT_STORE.getCurrentRole();
-  const showWorkload = currentRole?.label !== 'Technical';
   const [stats, projects, tasks, members, activity] = await Promise.all([
     PT_STORE.getStats(), PT_STORE.getProjects(), PT_STORE.getTasks(), PT_STORE.getMembers(), PT_STORE.getActivity(6)
   ]);
