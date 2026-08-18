@@ -393,8 +393,23 @@ class Store {
 
   async deleteProject(id) {
     const d = await this._load();
-    d.projects = d.projects.filter(p => p.project_id !== id && p.id !== id);
-    d.tasks = d.tasks.filter(t => t.project_id !== id);
+
+    const taskIds = d.tasks
+      .filter(task => task.project_id === id)
+      .map(task => task.task_id);
+
+    d.projects = d.projects.filter(
+      project => project.project_id !== id && project.id !== id
+    );
+
+    d.tasks = d.tasks.filter(
+      task => task.project_id !== id
+    );
+
+    d.time_entries = d.time_entries.filter(
+      entry => !taskIds.includes(entry.task_id)
+    );
+
     this._persist();
   }
 
@@ -441,20 +456,60 @@ class Store {
   async saveTask(task) {
     const d = await this._load();
     const normalized = normalizeTask(task, d.statuses, d.priorities);
+
     normalized.updated_at = new Date().toISOString();
+
     if (normalized.id) {
-      const idx = d.tasks.findIndex(t => t.task_id === normalized.id || t.id === normalized.id);
+      const idx = d.tasks.findIndex(
+        t => t.task_id === normalized.id || t.id === normalized.id
+      );
+
       if (idx > -1) {
-        d.tasks[idx] = { ...d.tasks[idx], ...normalized };
+        const existingTask = d.tasks[idx];
+        const previousStatusId = existingTask.status_id;
+        const nextStatusId = normalized.status_id;
+
+        d.tasks[idx] = {
+          ...existingTask,
+          ...normalized,
+        };
+
+        if (previousStatusId !== nextStatusId) {
+          this._handleTimerForStatus(
+            d,
+            d.tasks[idx],
+            nextStatusId
+          );
+        }
+
         this._persist();
-        return this._attachTaskMeta(d.tasks[idx], d);
+
+        return this._attachTaskMeta(
+          d.tasks[idx],
+          d
+        );
       }
     }
+
     normalized.task_id = normalized.task_id || uid('TSK');
     normalized.id = normalized.task_id;
+
     d.tasks.unshift(normalized);
+
+    // Start the timer immediately when a new task
+    // is created with the In Progress status.
+    this._handleTimerForStatus(
+      d,
+      normalized,
+      normalized.status_id
+    );
+
     this._persist();
-    return this._attachTaskMeta(normalized, d);
+
+    return this._attachTaskMeta(
+      normalized,
+      d
+    );
   }
 
   async updateTaskStatus(id, status) {
@@ -471,7 +526,23 @@ class Store {
 
   async deleteTask(id) {
     const d = await this._load();
-    d.tasks = d.tasks.filter(t => t.task_id !== id && t.id !== id);
+
+    const task = d.tasks.find(
+      task => task.task_id === id || task.id === id
+    );
+
+    if (!task) return;
+
+    const taskId = task.task_id;
+
+    d.tasks = d.tasks.filter(
+      task => task.task_id !== id && task.id !== id
+    );
+
+    d.time_entries = d.time_entries.filter(
+      entry => entry.task_id !== taskId
+    );
+
     this._persist();
   }
 

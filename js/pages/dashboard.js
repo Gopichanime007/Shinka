@@ -139,19 +139,56 @@
   function renderStatusChart(stats) {
     const labels = Object.keys(stats.byStatus);
     const data = Object.values(stats.byStatus);
-    const colorMap = { 'Backlog': 'slate', 'To Do': 'blue', 'In Progress': 'orange', 'In Review': 'purple', 'Blocked': 'red', 'Completed': 'green' };
-    const colors = labels.map(l => chartColor(colorMap[l]));
+
+    const colors = labels.map((label) => {
+      const colorName = PT_UI.STATUS_COLOR[label] || 'slate';
+      return chartColor(colorName);
+    });
+
     new Chart(document.getElementById('statusDoughnut'), {
       type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }] },
+
+      data: {
+        labels,
+
+        datasets: [{
+          data,
+          backgroundColor: colors,
+          borderWidth: 0,
+          hoverOffset: 6,
+        }],
+      },
+
       options: {
         cutout: '68%',
-        plugins: { legend: { display: false }, tooltip: { padding: 10, cornerRadius: 8 } },
-        animation: { duration: 700, easing: 'easeOutCubic' },
-      }
+
+        plugins: {
+          legend: {
+            display: false,
+          },
+
+          tooltip: {
+            padding: 10,
+            cornerRadius: 8,
+          },
+        },
+
+        animation: {
+          duration: 700,
+          easing: 'easeOutCubic',
+        },
+      },
     });
-    document.getElementById('statusLegend').innerHTML = labels.map((l, i) => `
-      <div class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${l} (${data[i]})</div>
+
+    document.getElementById('statusLegend').innerHTML =
+      labels.map((label, index) => `
+      <div class="legend-item">
+        <span
+          class="legend-dot"
+          style="background:${colors[index]}"
+        ></span>
+        ${PT_UI.escapeHtml(label)} (${data[index]})
+      </div>
     `).join('');
   }
 
